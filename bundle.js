@@ -103,7 +103,8 @@
 	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 5 }),
 	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 10 }),
 	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 100 }),
-	      React.createElement(Result, { localCounter: this.state.counter })
+	      React.createElement(Result, { localCounter: this.state.counter }),
+	      React.createElement(WorkingWithData, null)
 	    );
 	  }
 	});
@@ -19696,9 +19697,23 @@
 
 /***/ },
 /* 159 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
+
+	var React = __webpack_require__(1);
+
+	var Main = React.createClass({
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      'FOO'
+	    );
+	  }
+	});
+
+	module.exports = Main;
 
 /***/ }
 /******/ ]);

@@ -50,6 +50,7 @@ const Main = React.createClass({
         <Button localIncrementCounter={this.myIncrementCounter} increment={10} />
         <Button localIncrementCounter={this.myIncrementCounter} increment={100} />
         <Result localCounter={this.state.counter} />
+        <WorkingWithData />
       </div>
     );
   }
