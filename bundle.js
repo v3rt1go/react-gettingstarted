@@ -48,6 +48,7 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
+	var WorkingWithData = __webpack_require__(159);
 
 	var Button = React.createClass({
 	  localIncrement: function localIncrement() {
@@ -19692,6 +19693,12 @@
 
 	module.exports = __webpack_require__(3);
 
+
+/***/ },
+/* 159 */
+/***/ function(module, exports) {
+
+	"use strict";
 
 /***/ }
 /******/ ]);

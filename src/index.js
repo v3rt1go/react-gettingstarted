@@ -2,6 +2,7 @@
 
 const React = require('react');
 const ReactDOM = require('react-dom');
+const WorkingWithData = require('./workingWithData.js');
 
 const Button = React.createClass({
   localIncrement() {
