@@ -13,6 +13,7 @@
   "author": "Alex Griciuc <agriciuc@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "bootstrap": "^3.3.5",
     "jquery": "^2.1.4",
     "lodash": "^3.10.1",
     "react": "^0.14.2"
@@ -24,8 +25,10 @@
     "babel-preset-es2015": "^6.1.2",
     "babel-preset-react": "^6.1.2",
     "browser-sync": "^2.9.12",
+    "css-loader": "^0.22.0",
     "eslint-plugin-react": "^3.8.0",
     "react-dom": "^0.14.2",
+    "style-loader": "^0.13.0",
     "webpack": "^1.12.3"
   }
 }

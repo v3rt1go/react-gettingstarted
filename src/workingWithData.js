@@ -1,6 +1,7 @@
 'use strict';
 
 const React = require('react');
+const ReactDOM = require('react-dom');
 const $ = require('jquery');
 
 const Card = React.createClass({
@@ -35,7 +36,7 @@ const Form = React.createClass({
     e.preventDefault();
     // To access the value of the input field in this function we need to use
     // the ref attribute on the field and then define the var here like so
-    const loginInput = React.findDOMNode(this.refs.login);
+    const loginInput = ReactDOM.findDOMNode(this.refs.login);
     this.props.addCard(loginInput.value);
     // After adding the value in the logins array we clear the value for the
     // next submit
@@ -63,8 +64,11 @@ const Main = React.createClass({
     };
   },
   render() {
+    // We've added i to solve react's multiple components dynamic children
+    // warning from the console
+    let i = 0;
     const cards = this.state.logins.map((login) => {
-      return (<Card login={login} />);
+      return (<Card login={login} key={i++} />);
     });
     return (
       <div>

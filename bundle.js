@@ -48,68 +48,11 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var WorkingWithData = __webpack_require__(159);
+	var WorkingWithComponents = __webpack_require__(159);
+	var Game = __webpack_require__(162);
 
-	var Button = React.createClass({
-	  localIncrement: function localIncrement() {
-	    // We can access the myIncrementCounter from the parent Main component
-	    // from the props object with the name it was passed to this component
-	    this.props.localIncrementCounter(this.props.increment);
-	  },
-
-	  // In react we use render to return what will be rendered on screen from the
-	  // react component
-	  render: function render() {
-	    return React.createElement(
-	      'button',
-	      { onClick: this.localIncrement },
-	      '+',
-	      this.props.increment
-	    );
-	  }
-	});
-
-	// Reusable components
-	var Result = React.createClass({
-	  render: function render() {
-	    return React.createElement(
-	      'div',
-	      null,
-	      this.props.localCounter
-	    );
-	  }
-	});
-
-	// To share state properties between components we need to define them on a
-	// parent component that contains the compoenent we want to share state with
-	var Main = React.createClass({
-	  // We use getInitialState to set a default/starting value for state properties
-	  // that we want to use inside the react component
-
-	  getInitialState: function getInitialState() {
-	    return {
-	      counter: 0
-	    };
-	  },
-	  myIncrementCounter: function myIncrementCounter(increment) {
-	    // We use setState to set the value of a state property from the component
-	    this.setState({ counter: this.state.counter + increment });
-	  },
-	  render: function render() {
-	    return React.createElement(
-	      'div',
-	      null,
-	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 1 }),
-	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 5 }),
-	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 10 }),
-	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 100 }),
-	      React.createElement(Result, { localCounter: this.state.counter }),
-	      React.createElement(WorkingWithData, null)
-	    );
-	  }
-	});
-
-	ReactDOM.render(React.createElement(Main, null), document.getElementById("root"));
+	ReactDOM.render(React.createElement(Game, null), document.getElementById('container'));
+	ReactDOM.render(React.createElement(WorkingWithComponents, null), document.getElementById("root"));
 
 /***/ },
 /* 1 */
@@ -19702,7 +19645,78 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var $ = __webpack_require__(160);
+	var WorkingWithData = __webpack_require__(160);
+
+	var Button = React.createClass({
+	  localIncrement: function localIncrement() {
+	    // We can access the myIncrementCounter from the parent Main component
+	    // from the props object with the name it was passed to this component
+	    this.props.localIncrementCounter(this.props.increment);
+	  },
+
+	  // In react we use render to return what will be rendered on screen from the
+	  // react component
+	  render: function render() {
+	    return React.createElement(
+	      'button',
+	      { onClick: this.localIncrement },
+	      '+',
+	      this.props.increment
+	    );
+	  }
+	});
+
+	// Reusable components
+	var Result = React.createClass({
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      this.props.localCounter
+	    );
+	  }
+	});
+
+	// To share state properties between components we need to define them on a
+	// parent component that contains the compoenent we want to share state with
+	var Main = React.createClass({
+	  // We use getInitialState to set a default/starting value for state properties
+	  // that we want to use inside the react component
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      counter: 0
+	    };
+	  },
+	  myIncrementCounter: function myIncrementCounter(increment) {
+	    // We use setState to set the value of a state property from the component
+	    this.setState({ counter: this.state.counter + increment });
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 1 }),
+	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 5 }),
+	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 10 }),
+	      React.createElement(Button, { localIncrementCounter: this.myIncrementCounter, increment: 100 }),
+	      React.createElement(Result, { localCounter: this.state.counter }),
+	      React.createElement(WorkingWithData, null)
+	    );
+	  }
+	});
+
+	module.exports = Main;
+
+/***/ },
+/* 160 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactDOM = __webpack_require__(158);
+	var $ = __webpack_require__(161);
 
 	var Card = React.createClass({
 	  // Even though we don't set anything to the return object, we need to use the
@@ -19741,7 +19755,7 @@
 	    e.preventDefault();
 	    // To access the value of the input field in this function we need to use
 	    // the ref attribute on the field and then define the var here like so
-	    var loginInput = React.findDOMNode(this.refs.login);
+	    var loginInput = ReactDOM.findDOMNode(this.refs.login);
 	    this.props.addCard(loginInput.value);
 	    // After adding the value in the logins array we clear the value for the
 	    // next submit
@@ -19773,8 +19787,11 @@
 	    };
 	  },
 	  render: function render() {
+	    // We've added i to solve react's multiple components dynamic children
+	    // warning from the console
+	    var i = 0;
 	    var cards = this.state.logins.map(function (login) {
-	      return React.createElement(Card, { login: login });
+	      return React.createElement(Card, { login: login, key: i++ });
 	    });
 	    return React.createElement(
 	      'div',
@@ -19788,7 +19805,7 @@
 	module.exports = Main;
 
 /***/ },
-/* 160 */
+/* 161 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -29002,6 +29019,70 @@
 
 	}));
 
+
+/***/ },
+/* 162 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+
+	var StarsFrame = React.createClass({
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { id: 'stars-frame' },
+	      React.createElement(
+	        'div',
+	        { className: 'well' },
+	        React.createElement('span', { className: 'glyphicon glyphicon-star' }),
+	        React.createElement('span', { className: 'glyphicon glyphicon-star' }),
+	        React.createElement('span', { className: 'glyphicon glyphicon-star' }),
+	        React.createElement('span', { className: 'glyphicon glyphicon-star' })
+	      )
+	    );
+	  }
+	});
+
+	var ButtonFrame = React.createClass({
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      '...'
+	    );
+	  }
+	});
+
+	var AnswerFrame = React.createClass({
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      '...'
+	    );
+	  }
+	});
+
+	var Game = React.createClass({
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { id: 'game' },
+	      React.createElement(
+	        'h2',
+	        null,
+	        'Play Nine'
+	      ),
+	      React.createElement(StarsFrame, null),
+	      React.createElement(ButtonFrame, null),
+	      React.createElement(AnswerFrame, null)
+	    );
+	  }
+	});
+
+	module.exports = Game;
 
 /***/ }
 /******/ ]);
