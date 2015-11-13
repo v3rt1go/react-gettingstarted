@@ -29030,16 +29030,27 @@
 
 	var StarsFrame = React.createClass({
 	  render: function render() {
+	    // If we define the number of stars here, it will refresh each time we
+	    // interact with our Game component - like picking a number from the
+	    // NumbersFrame. Not sure why ... maybe because the Game component redraws
+	    // it's child components .. To fix this we define the random numberOfStars
+	    // inside the state of the parent Game component and pass it to the
+	    // StarsFrame
+	    // const numberOfStars = Math.floor(Math.random() * 9) + 1;
+	    var stars = [];
+	    for (var i = 0; i < this.props.numberOfStars; i++) {
+	      stars.push(React.createElement('span', { className: 'glyphicon glyphicon-star' }));
+	    };
+
+	    // When react sees an array inside a jsx block with {} it will just join it
+	    // and render it directly
 	    return React.createElement(
 	      'div',
 	      { id: 'stars-frame' },
 	      React.createElement(
 	        'div',
 	        { className: 'well' },
-	        React.createElement('span', { className: 'glyphicon glyphicon-star' }),
-	        React.createElement('span', { className: 'glyphicon glyphicon-star' }),
-	        React.createElement('span', { className: 'glyphicon glyphicon-star' }),
-	        React.createElement('span', { className: 'glyphicon glyphicon-star' })
+	        stars
 	      )
 	    );
 	  }
@@ -29049,8 +29060,12 @@
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      null,
-	      '...'
+	      { id: 'button-frame' },
+	      React.createElement(
+	        'button',
+	        { className: 'btn btn-primary btn-lg' },
+	        '='
+	      )
 	    );
 	  }
 	});
@@ -29059,13 +29074,70 @@
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      null,
-	      '...'
+	      { id: 'answer-frame' },
+	      React.createElement(
+	        'div',
+	        { className: 'well' },
+	        this.props.selectedNumbers
+	      )
+	    );
+	  }
+	});
+
+	var NumbersFrame = React.createClass({
+	  render: function render() {
+	    var clickNumber = this.props.clickNumber;
+	    var selectedNumbers = this.props.selectedNumbers;
+
+	    var numbers = [],
+	        className = undefined;
+
+	    for (var i = 1; i <= 9; i++) {
+	      className = "number selected-" + (selectedNumbers.indexOf(i) >= 0);
+	      numbers.push(
+	      // TODO: test this scenario
+	      // We cannot call directly clickNumber(i) because this will execute at
+	      // runtime and i will not have the correct value; We use bind to create
+	      // a closure - a copy of this function that will hold the current value
+	      // of i instead of it's last one and since we don't need to explicitly
+	      // set the this keyword we set it to null
+	      React.createElement(
+	        'div',
+	        { className: className, onClick: clickNumber.bind(null, i) },
+	        i
+	      ));
+	    };
+
+	    return React.createElement(
+	      'div',
+	      { id: 'numbers-frame' },
+	      React.createElement(
+	        'div',
+	        { className: 'well' },
+	        numbers
+	      )
 	    );
 	  }
 	});
 
 	var Game = React.createClass({
+	  // Get initial state is also in charge of initializing a state for the
+	  // component. Meaning that if we don't declare getInitialState() inside a
+	  // component that component will have no state
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      numberOfStars: Math.floor(Math.random() * 9) + 1,
+	      selectedNumbers: []
+	    };
+	  },
+	  clickNumber: function clickNumber(clickedNumber) {
+	    if (this.state.selectedNumbers.indexOf(clickedNumber) < 0) {
+	      this.setState({
+	        selectedNumbers: this.state.selectedNumbers.concat(clickedNumber)
+	      });
+	    }
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      'div',
@@ -29075,9 +29147,16 @@
 	        null,
 	        'Play Nine'
 	      ),
-	      React.createElement(StarsFrame, null),
-	      React.createElement(ButtonFrame, null),
-	      React.createElement(AnswerFrame, null)
+	      React.createElement('hr', null),
+	      React.createElement(
+	        'div',
+	        { className: 'clearfix' },
+	        React.createElement(StarsFrame, { numberOfStars: this.state.numberOfStars }),
+	        React.createElement(ButtonFrame, null),
+	        React.createElement(AnswerFrame, { selectedNumbers: this.state.selectedNumbers })
+	      ),
+	      React.createElement(NumbersFrame, { selectedNumbers: this.state.selectedNumbers,
+	        clickNumber: this.clickNumber })
 	    );
 	  }
 	});
