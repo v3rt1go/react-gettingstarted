@@ -29027,6 +29027,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
+	var possibleCombinationSum = __webpack_require__(163);
 
 	var StarsFrame = React.createClass({
 	  render: function render() {
@@ -29040,7 +29041,7 @@
 	    var stars = [];
 	    for (var i = 0; i < this.props.numberOfStars; i++) {
 	      stars.push(React.createElement('span', { className: 'glyphicon glyphicon-star' }));
-	    };
+	    }
 
 	    // When react sees an array inside a jsx block with {} it will just join it
 	    // and render it directly
@@ -29058,13 +29059,55 @@
 
 	var ButtonFrame = React.createClass({
 	  render: function render() {
+	    var button = undefined,
+	        disabled = undefined;
+	    var correct = this.props.correct,
+	        redrawCount = this.props.redrawCount;
+
+	    switch (correct) {
+	      case true:
+	        button = React.createElement(
+	          'button',
+	          { className: 'btn btn-success btn-lg', onClick: this.props.acceptAnswer },
+	          React.createElement('span', { className: 'glyphicon glyphicon-ok' })
+	        );
+	        break;
+	      case false:
+	        button = React.createElement(
+	          'button',
+	          { className: 'btn btn-danger btn-lg' },
+	          React.createElement('span', { className: 'glyphicon glyphicon-remove' })
+	        );
+	        break;
+	      default:
+	        disabled = this.props.selectedNumbers.length === 0;
+	        button = React.createElement(
+	          'button',
+	          { className: 'btn btn-primary btn-lg', disabled: disabled,
+	            onClick: this.props.checkAnswer },
+	          '='
+	        );
+	    }
+
+	    // React is smart enough to not include the disabled property if the
+	    // condition is false
 	    return React.createElement(
 	      'div',
 	      { id: 'button-frame' },
+	      button,
+	      React.createElement('br', null),
+	      React.createElement('br', null),
 	      React.createElement(
 	        'button',
-	        { className: 'btn btn-primary btn-lg' },
-	        '='
+	        { className: 'btn btn-warning btn-xs',
+	          onClick: this.props.redraw,
+	          disabled: redrawCount <= 0 },
+	        React.createElement(
+	          'span',
+	          { className: 'glyphicon glyphicon-refresh' },
+	          React.createElement('br', null),
+	          redrawCount
+	        )
 	      )
 	    );
 	  }
@@ -29072,13 +29115,21 @@
 
 	var AnswerFrame = React.createClass({
 	  render: function render() {
+	    var props = this.props;
+	    var selectedNumbers = props.selectedNumbers.map(function (number) {
+	      return React.createElement(
+	        'span',
+	        { onClick: props.unselectNumber.bind(null, number) },
+	        number
+	      );
+	    });
 	    return React.createElement(
 	      'div',
 	      { id: 'answer-frame' },
 	      React.createElement(
 	        'div',
 	        { className: 'well' },
-	        this.props.selectedNumbers
+	        selectedNumbers
 	      )
 	    );
 	  }
@@ -29086,27 +29137,29 @@
 
 	var NumbersFrame = React.createClass({
 	  render: function render() {
-	    var clickNumber = this.props.clickNumber;
-	    var selectedNumbers = this.props.selectedNumbers;
+	    var selectNumber = this.props.selectNumber,
+	        usedNumbers = this.props.usedNumbers,
+	        selectedNumbers = this.props.selectedNumbers;
 
 	    var numbers = [],
 	        className = undefined;
 
 	    for (var i = 1; i <= 9; i++) {
 	      className = "number selected-" + (selectedNumbers.indexOf(i) >= 0);
+	      className += " used-" + (usedNumbers.indexOf(i) > -1);
 	      numbers.push(
 	      // TODO: test this scenario
-	      // We cannot call directly clickNumber(i) because this will execute at
+	      // We cannot call directly selectNumber(i) because this will execute at
 	      // runtime and i will not have the correct value; We use bind to create
 	      // a closure - a copy of this function that will hold the current value
 	      // of i instead of it's last one and since we don't need to explicitly
 	      // set the this keyword we set it to null
 	      React.createElement(
 	        'div',
-	        { className: className, onClick: clickNumber.bind(null, i) },
+	        { className: className, onClick: selectNumber.bind(null, i) },
 	        i
 	      ));
-	    };
+	    }
 
 	    return React.createElement(
 	      'div',
@@ -29120,6 +29173,25 @@
 	  }
 	});
 
+	var DoneFrame = React.createClass({
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'well text-center' },
+	      React.createElement(
+	        'h2',
+	        null,
+	        this.props.doneStatus
+	      ),
+	      React.createElement(
+	        'button',
+	        { className: 'btn btn-default', onClick: this.props.resetGame },
+	        'Play Again'
+	      )
+	    );
+	  }
+	});
+
 	var Game = React.createClass({
 	  // Get initial state is also in charge of initializing a state for the
 	  // component. Meaning that if we don't declare getInitialState() inside a
@@ -29128,17 +29200,146 @@
 	  getInitialState: function getInitialState() {
 	    return {
 	      numberOfStars: Math.floor(Math.random() * 9) + 1,
-	      selectedNumbers: []
+	      selectedNumbers: [],
+	      usedNumbers: [],
+	      correct: null,
+	      redrawCount: 5,
+	      doneStatus: null
 	    };
 	  },
-	  clickNumber: function clickNumber(clickedNumber) {
-	    if (this.state.selectedNumbers.indexOf(clickedNumber) < 0) {
+	  resetGame: function resetGame() {
+	    // We're going to use react's this.replaceState method to replace all the
+	    // current state of the component to the object we pass it.
+	    this.replaceState(this.getInitialState());
+	  },
+	  selectNumber: function selectNumber(clickedNumber) {
+	    if (this.state.selectedNumbers.indexOf(clickedNumber) < 0 && this.state.usedNumbers.indexOf(clickedNumber) < 0) {
+	      // When a player selects a number we have to reset the button so he can
+	      // recheck his answer. For this we set correct: null each time a player
+	      // selects or unselects an answer
 	      this.setState({
-	        selectedNumbers: this.state.selectedNumbers.concat(clickedNumber)
+	        selectedNumbers: this.state.selectedNumbers.concat(clickedNumber),
+	        correct: null
+	      });
+	    }
+	  },
+	  unselectNumber: function unselectNumber(clickedNumber) {
+	    var selectedNumbers = this.state.selectedNumbers;
+	    var indexOfClicked = selectedNumbers.indexOf(clickedNumber);
+
+	    if (indexOfClicked > -1) {
+	      selectedNumbers.splice(indexOfClicked, 1);
+	      this.setState({
+	        selectedNumbers: selectedNumbers,
+	        correct: null
+	      });
+	    }
+	  },
+	  sumOfSelectedNumbers: function sumOfSelectedNumbers() {
+	    return this.state.selectedNumbers.reduce(function (p, n) {
+	      return p + n;
+	    }, 0);
+	  },
+	  checkAnswer: function checkAnswer() {
+	    var correct = this.state.numberOfStars === this.sumOfSelectedNumbers();
+	    this.setState({
+	      correct: correct
+	    });
+	  },
+	  acceptAnswer: function acceptAnswer() {
+	    var _this = this;
+
+	    // After a player has checked a response of an answer - and it's a success
+	    // he has to accept the answer so the game can mark the used numbers as
+	    // permanently used and the starsFrame will draw a new number of random
+	    // stars
+	    var usedNumbers = this.state.usedNumbers.concat(this.state.selectedNumbers);
+
+	    // The setState method of react is async by nature. It takes an optional
+	    // second argument - beside the state object - that will be the callback to
+	    // be invoked when react finishes updating the state of the component
+	    this.setState({
+	      // reset the selected numbers frame
+	      selectedNumbers: [],
+	      // updated the usedNumbers array with the previously selected numbers
+	      usedNumbers: usedNumbers,
+	      // reset the button for a new check
+	      correct: null,
+	      // redraw a new number of random stars for the stars frame
+	      numberOfStars: Math.floor(Math.random() * 9) + 1
+	    }, function () {
+	      // In the callback of setState (when the new state values have been
+	      // updated) we re-check the doneStatus of the game
+	      _this.updateDoneStatus();
+	    });
+	  },
+	  redraw: function redraw() {
+	    var _this2 = this;
+
+	    if (this.state.redrawCount > 0) {
+	      this.setState({
+	        numberOfStars: Math.floor(Math.random() * 9) + 1,
+	        selectedNumbers: [],
+	        correct: null,
+	        redrawCount: this.state.redrawCount - 1
+	      }, function () {
+	        _this2.updateDoneStatus();
+	      });
+	    }
+	  },
+	  possibleSolutions: function possibleSolutions() {
+	    var numberOfStars = this.state.numberOfStars,
+	        usedNumbers = this.state.usedNumbers;
+	    var possibleNumbers = [];
+
+	    // generate array of possible numbers
+	    for (var i = 1; i <= 9; i++) {
+	      // the number has not been used
+	      if (usedNumbers.indexOf(i) < 0) {
+	        console.log('in update status');
+	        possibleNumbers.push(i);
+	      }
+	    }
+
+	    // We're going to use a function from possibleCombinationSum that takes an
+	    // array of numbers and adds them up to try and match a given number passed
+	    // as the second argument. Returns true/false if possible
+	    return possibleCombinationSum(possibleNumbers, numberOfStars);
+	  },
+	  updateDoneStatus: function updateDoneStatus() {
+	    // updateDoneStatus has to be called each time an answer is accepted or a
+	    // redraw is called to check if the game is over or not
+	    if (this.state.usedNumbers.length === 9) {
+	      this.setState({
+	        doneStatus: 'Done. Nice Job!'
+	      });
+	      return;
+	    }
+
+	    if (this.state.redrawCount === 0 && !this.possibleSolutions()) {
+	      this.setState({
+	        doneStatus: 'Game Over!'
 	      });
 	    }
 	  },
 	  render: function render() {
+	    var selectedNumbers = this.state.selectedNumbers,
+	        usedNumbers = this.state.usedNumbers,
+	        redrawCount = this.state.redrawCount,
+	        numberOfStars = this.state.numberOfStars,
+	        correct = this.state.correct,
+	        doneStatus = this.state.doneStatus;
+	    var bottomFrame = undefined;
+
+	    if (doneStatus) {
+	      bottomFrame = React.createElement(DoneFrame, { doneStatus: doneStatus,
+	        resetGame: this.resetGame });
+	    } else {
+	      bottomFrame = React.createElement(NumbersFrame, { selectedNumbers: selectedNumbers,
+	        usedNumbers: usedNumbers,
+	        selectNumber: this.selectNumber });
+	    }
+
 	    return React.createElement(
 	      'div',
 	      { id: 'game' },
@@ -29151,17 +29352,57 @@
 	      React.createElement(
 	        'div',
 	        { className: 'clearfix' },
-	        React.createElement(StarsFrame, { numberOfStars: this.state.numberOfStars }),
-	        React.createElement(ButtonFrame, null),
-	        React.createElement(AnswerFrame, { selectedNumbers: this.state.selectedNumbers })
+	        React.createElement(StarsFrame, { numberOfStars: numberOfStars }),
+	        React.createElement(ButtonFrame, { selectedNumbers: selectedNumbers,
+	          redrawCount: redrawCount,
+	          redraw: this.redraw,
+	          correct: correct,
+	          checkAnswer: this.checkAnswer,
+	          acceptAnswer: this.acceptAnswer }),
+	        React.createElement(AnswerFrame, { selectedNumbers: selectedNumbers,
+	          unselectNumber: this.unselectNumber })
 	      ),
-	      React.createElement(NumbersFrame, { selectedNumbers: this.state.selectedNumbers,
-	        clickNumber: this.clickNumber })
+	      bottomFrame
 	    );
 	  }
 	});
 
 	module.exports = Game;
+
+/***/ },
+/* 163 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var possibleCombinationSum = function possibleCombinationSum(arr, n) {
+	  if (arr.indexOf(n) >= 0) {
+	    return true;
+	  }
+	  if (arr[0] > n) {
+	    return false;
+	  }
+	  if (arr[arr.length - 1] > n) {
+	    arr.pop();
+	    return possibleCombinationSum(arr, n);
+	  }
+	  var listSize = arr.length,
+	      combinationsCount = 1 << listSize;
+	  for (var i = 1; i < combinationsCount; i++) {
+	    var combinationSum = 0;
+	    for (var j = 0; j < listSize; j++) {
+	      if (i & 1 << j) {
+	        combinationSum += arr[j];
+	      }
+	    }
+	    if (n === combinationSum) {
+	      return true;
+	    }
+	  }
+	  return false;
+	};
+
+	module.exports = possibleCombinationSum;
 
 /***/ }
 /******/ ]);
